@@ -48,6 +48,7 @@ bool rOgreXMLModelLoader::TexCoordElementToVector2(rXMLElement* element, rVector
 	if (element){
 		element->GetAttribute<float>("u", v.x);
 		element->GetAttribute<float>("v", v.y);
+		v.y = 1.0- v.y; // convert ogre tex coords to opengl tex coords
 		return true;
 	}
 	else{
@@ -77,7 +78,7 @@ rContentError rOgreXMLModelLoader::ParseMaterials(){
 				str >> name >> name;
 				rString texturePath = rPath::Combine(m_modelDir, name);
 				if (currentMaterial){
-					currentMaterial->SetParameter(rMATERIAL_PARAMETER_TEXTURE2D, "s_texture", name, name);
+					currentMaterial->SetParameter(rMATERIAL_PARAMETER_TEXTURE2D, "s_texture", name, name + ".rtex");
 				}
 
 				if (m_imageLoader){

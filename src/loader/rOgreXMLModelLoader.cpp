@@ -190,8 +190,6 @@ int rOgreXMLModelLoader::LoadModel(const rString& path, rModelData& modelData){
 	return error;
 }
 
-#include <iostream>
-
 void rOgreXMLModelLoader::ParseSkeleton(const rString& skeletonFileName){
 	rString skeletonPath = rPath::Assemble(m_modelDir, skeletonFileName, ".xml");
 
@@ -220,6 +218,7 @@ void rOgreXMLModelLoader::ParseBones(rXMLDocument& document){
 		PositionElementToVector3(boneNode->GetFirstChildNamed("position"), pos);
 
 		rBone* bone = skeleton->CreateBone(name);
+
 		bone->position = pos;
 	}
 
@@ -234,9 +233,6 @@ void rOgreXMLModelLoader::ParseBones(rXMLDocument& document){
 
 		if (childBone && parentBone){
 			parentBone->AddChild(childBone);
-		}
-		else if (childBone && !parentBone){
-			skeleton->SetRootBone(name);
 		}
 	}
 }

@@ -29,6 +29,9 @@ private:
 	static bool PositionElementToVector3(rXMLElement* element, rVector3& v);
 	static bool TexCoordElementToVector2(rXMLElement* element, rVector2& v);
 
+	void ParseSkeleton(const rString& skeletonFileName);
+	void ParseBones(rXMLDocument& document);
+
 	rContentError ParseMaterials();
 	void SetImportInfo(const rString& path);
 	rString GetNextMeshName() const;

@@ -48,7 +48,7 @@ bool rOgreXMLModelLoader::TexCoordElementToVector2(rXMLElement* element, rVector
 	if (element){
 		element->GetAttribute<float>("u", v.x);
 		element->GetAttribute<float>("v", v.y);
-		v.y = 1.0- v.y; // convert ogre tex coords to opengl tex coords
+		v.y = 1.0f - v.y; // convert ogre tex coords to opengl tex coords
 		return true;
 	}
 	else{
@@ -175,9 +175,68 @@ int rOgreXMLModelLoader::LoadModel(const rString& path, rModelData& modelData){
 		m_modelData->SetName(m_modelName);
 		ParseMaterials();
 		ParseGeometry(document);
+
+		rXMLElement* skeletonLink = document.GetRoot()->GetFirstChildNamed("skeletonlink");
+
+		if (skeletonLink){
+			rString skeletonFileName;
+			skeletonLink->GetAttribute<rString>("name", skeletonFileName);
+			ParseSkeleton(skeletonFileName);
+		}
 	}
 
 	Clear();
 
 	return error;
+}
+
+#include <iostream>
+
+void rOgreXMLModelLoader::ParseSkeleton(const rString& skeletonFileName){
+	rString skeletonPath = rPath::Assemble(m_modelDir, skeletonFileName, ".xml");
+
+	rXMLDocument document;
+	rXMLReaderError error = document.LoadFromFile(skeletonPath);
+
+	if (!error){
+		m_modelData->CreateSkeleton();
+
+		ParseBones(document);
+	}
+}
+
+void rOgreXMLModelLoader::ParseBones(rXMLDocument& document){
+	rXMLElement* bones = document.GetRoot()->GetFirstChildNamed("bones");
+	rXMLElement* bonehierarchy = document.GetRoot()->GetFirstChildNamed("bonehierarchy");
+	rSkeleton* skeleton = m_modelData->GetSkeleton();
+
+	rXMLElement* boneNode = NULL;
+	rString name, parent;
+	rVector3 pos;
+
+	for (size_t i = 0; i < bones->NumChildren(); i++){
+		boneNode = bones->GetChild(i);
+		boneNode->GetAttribute<rString>("name", name);
+		PositionElementToVector3(boneNode->GetFirstChildNamed("position"), pos);
+
+		rBone* bone = skeleton->CreateBone(name);
+		bone->position = pos;
+	}
+
+	for (size_t i =0; i < bonehierarchy->NumChildren(); i++){
+		rXMLElement* boneparent = bonehierarchy->GetChild(i);
+		
+		boneparent->GetAttribute<rString>("bone", name);
+		boneparent->GetAttribute<rString>("parent", parent);
+
+		rBone* childBone = skeleton->GetBone(name);
+		rBone* parentBone = skeleton->GetBone(parent);
+
+		if (childBone && parentBone){
+			parentBone->AddChild(childBone);
+		}
+		else if (childBone && !parentBone){
+			skeleton->SetRootBone(name);
+		}
+	}
 }

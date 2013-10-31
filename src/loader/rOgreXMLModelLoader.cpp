@@ -153,6 +153,19 @@ void rOgreXMLModelLoader::ParseGeometry(rXMLDocument& document){
 			elementBuffer->Push(v1, v2, v3);
 		}
 	}
+
+	rXMLElement* boneassignments = document.GetRoot()->GetFirstChildNamed("boneassignments");
+
+	unsigned short vertexindex, boneindex;
+	float weight;
+	for (size_t i = 0; i < boneassignments->NumChildren(); i++){
+		rXMLElement* assignment = boneassignments->GetChild(i);
+		assignment->GetAttribute<unsigned short>("vertexindex", vertexindex);
+		assignment->GetAttribute<unsigned short>("boneindex", boneindex);
+		assignment->GetAttribute<float>("weight", weight);
+
+		m_modelData->CreateVertexBoneLink(vertexindex, boneindex, weight);
+	}
 }
 
 rString rOgreXMLModelLoader::GetNextMeshName() const{

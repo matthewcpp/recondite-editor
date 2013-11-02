@@ -31,6 +31,7 @@ private:
 
 	void ParseSkeleton(const rString& skeletonFileName);
 	void ParseBones(rXMLDocument& document);
+	void ParseAnimations(rXMLDocument& document);
 
 	rContentError ParseMaterials();
 	void SetImportInfo(const rString& path);

@@ -164,7 +164,7 @@ void rOgreXMLModelLoader::ParseGeometry(rXMLDocument& document){
 		assignment->GetAttribute<unsigned short>("boneindex", boneindex);
 		assignment->GetAttribute<float>("weight", weight);
 
-		m_modelData->CreateVertexBoneLink(vertexindex, boneindex, weight);
+		geometryData.CreateVertexBoneLink(vertexindex,boneindex,weight);
 	}
 }
 
@@ -213,6 +213,7 @@ void rOgreXMLModelLoader::ParseSkeleton(const rString& skeletonFileName){
 		m_modelData->CreateSkeleton();
 
 		ParseBones(document);
+		ParseAnimations(document);
 	}
 }
 
@@ -246,6 +247,65 @@ void rOgreXMLModelLoader::ParseBones(rXMLDocument& document){
 
 		if (childBone && parentBone){
 			parentBone->AddChild(childBone);
+		}
+	}
+}
+
+void rOgreXMLModelLoader::ParseAnimations(rXMLDocument& document){
+	rXMLElement* animations = document.GetRoot()->GetFirstChildNamed("animations");
+	rSkeleton* skeleton = m_modelData->GetSkeleton();
+
+	rString name;
+	float time, angle;
+	unsigned short boneId;
+	rVector3 axis;
+
+	for (size_t i = 0; i < animations->NumChildren(); i++){
+		rXMLElement* animationNode = animations->GetChild(i);{
+			animationNode->GetAttribute<rString>("name", name);
+			animationNode->GetAttribute<float>("length", time);
+
+			rAnimation* animation = skeleton->CreateAnimation(name);
+			animation->SetDuration(time);
+
+			rXMLElement* tracks = animationNode->GetFirstChildNamed("tracks");
+			for (size_t t = 0; t < tracks->NumChildren(); t++){
+				rXMLElement* trackNode = tracks->GetChild(t);
+				trackNode->GetAttribute<unsigned short>("bone", boneId);
+
+				rAnimationTrack* animationTrack = animation->CreateTrack(boneId);
+
+				rXMLElement* keyframes = trackNode->GetFirstChildNamed("keyframes");
+				animationTrack->AllocateFrames(keyframes->NumChildren());
+
+				for (size_t k = 0; k < keyframes->NumChildren(); k++){
+					rXMLElement* keyframeNode = keyframes->GetChild(k);
+					rAnimationKeyframe* keyframe = animationTrack->GetKeyframe(k);
+
+					rXMLElement* translate = keyframeNode->GetFirstChildNamed("translate");
+
+					if (translate){
+						translate->GetAttribute<float>("x", keyframe->translation.x);
+						translate->GetAttribute<float>("y", keyframe->translation.y);
+						translate->GetAttribute<float>("z", keyframe->translation.z);
+					}
+
+					rXMLElement* rotate = keyframeNode->GetFirstChildNamed("rotate");
+
+					if (rotate){
+						rotate->GetAttribute<float>("angle", angle);
+
+						rXMLElement* axisNode = rotate->GetFirstChildNamed("axis");
+						axisNode->GetAttribute<float>("x", axis.x);
+						axisNode->GetAttribute<float>("y", axis.y);
+						axisNode->GetAttribute<float>("z", axis.z);
+
+						angle = rMath::RadToDeg(angle);
+
+						keyframe->rotation.SetFromAxisAngle(axis, angle);
+					}
+				}
+			}
 		}
 	}
 }

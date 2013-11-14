@@ -110,6 +110,8 @@ void rOgreXMLModelLoader::ParseGeometry(rXMLDocument& document){
 	vertexbuffer->GetAttribute<rString>("texture_coords", texCoords);
 	
 	rGeometryData& geometryData = m_modelData->GetGeometryData();
+	rAlignedBox3& modelBoundingBox = m_modelData->GetBoundingBox();
+
 	geometryData.Allocate(3, vertexCount,true,true);
 
 	rXMLElement* vertex = NULL;
@@ -123,6 +125,7 @@ void rOgreXMLModelLoader::ParseGeometry(rXMLDocument& document){
 		TexCoordElementToVector2(vertex->GetFirstChildNamed("texcoord"), texCoord);
 
 		geometryData.SetVertex(i, position, normal, texCoord);
+		modelBoundingBox.AddPoint(position);
 	}
 	
 
@@ -151,6 +154,15 @@ void rOgreXMLModelLoader::ParseGeometry(rXMLDocument& document){
 			face->GetAttribute<unsigned short>("v3", v3);
 
 			elementBuffer->Push(v1, v2, v3);
+
+			geometryData.GetVertexPosition(v1, position);
+			meshData->boundingBox.AddPoint(position);
+
+			geometryData.GetVertexPosition(v2, position);
+			meshData->boundingBox.AddPoint(position);
+
+			geometryData.GetVertexPosition(v3, position);
+			meshData->boundingBox.AddPoint(position);
 		}
 	}
 

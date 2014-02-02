@@ -112,7 +112,7 @@ void rOgreXMLModelLoader::ParseGeometry(rXMLDocument& document){
 	rGeometryData& geometryData = m_modelData->GetGeometryData();
 	rAlignedBox3& modelBoundingBox = m_modelData->GetBoundingBox();
 
-	geometryData.Allocate(3, vertexCount,true,true);
+	geometryData.Allocate(vertexCount);
 
 	rXMLElement* vertex = NULL;
 	rVector3 position, normal;
@@ -146,6 +146,7 @@ void rOgreXMLModelLoader::ParseGeometry(rXMLDocument& document){
 		meshData->buffer = meshName;
 
 		rElementBufferData* elementBuffer = geometryData.CreateElementBuffer(meshName);
+		rModelVertex v;
 		for (size_t f = 0; f < faces->NumChildren(); f++){
 			face = faces->GetChild(f);
 
@@ -155,14 +156,14 @@ void rOgreXMLModelLoader::ParseGeometry(rXMLDocument& document){
 
 			elementBuffer->Push(v1, v2, v3);
 
-			geometryData.GetVertexPosition(v1, position);
-			meshData->boundingBox.AddPoint(position);
+			geometryData.GetVertex(v1, v);
+			meshData->boundingBox.AddPoint(v.position);
 
-			geometryData.GetVertexPosition(v2, position);
-			meshData->boundingBox.AddPoint(position);
+			geometryData.GetVertex(v2, v);
+			meshData->boundingBox.AddPoint(v.position);
 
-			geometryData.GetVertexPosition(v3, position);
-			meshData->boundingBox.AddPoint(position);
+			geometryData.GetVertex(v3, v);
+			meshData->boundingBox.AddPoint(v.position);
 		}
 	}
 

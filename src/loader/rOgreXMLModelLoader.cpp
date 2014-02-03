@@ -70,7 +70,7 @@ rContentError rOgreXMLModelLoader::ParseMaterials(){
 				std::istringstream str(line);
 				str >> name >> name;
 				currentMaterial = m_modelData->CreateMaterialData(name);
-				currentMaterial->SetShader("default_textured", "");
+				currentMaterial->SetShader("default_model", "");
 				currentMaterial->SetParameter(rMATERIAL_PARAMETER_COLOR, "fragColor", "255 255 255 255");
 			}
 			else if (line.find("texture ") != rString::npos){
@@ -294,6 +294,9 @@ void rOgreXMLModelLoader::ParseAnimations(rXMLDocument& document){
 				for (size_t k = 0; k < keyframes->NumChildren(); k++){
 					rXMLElement* keyframeNode = keyframes->GetChild(k);
 					rAnimationKeyframe* keyframe = animationTrack->GetKeyframe(k);
+
+					keyframeNode->GetAttribute<float>("time", time);
+					keyframe->time = time;
 
 					rXMLElement* translate = keyframeNode->GetFirstChildNamed("translate");
 
